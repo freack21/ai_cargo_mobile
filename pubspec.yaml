@@ -17,6 +17,7 @@ dependencies:
   flutter_dotenv: ^5.0.2
   socket_io_client: ^2.0.3+1
   flutter_joystick: ^0.2.2
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -27,4 +28,5 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/
     - .env
