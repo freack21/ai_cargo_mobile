@@ -85,6 +85,7 @@ class SocketManager {
 
     socket!.on('connect', (_) {
       connected.value = true;
+      socket!.emit('join', 'basestation');
     });
 
     socket!.on('disconnect', (_) {
