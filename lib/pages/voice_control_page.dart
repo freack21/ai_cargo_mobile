@@ -143,14 +143,14 @@ class _VoiceControlPageState extends State<VoiceControlPage>
           children: [
             // Voice status text
             _buildVoiceStatus(voiceService),
-            
+
             const SizedBox(height: 40),
-            
+
             // Animated microphone button
             _buildMicButton(voiceService, socketService),
-            
+
             const SizedBox(height: 40),
-            
+
             // Last recognized command
             _buildLastCommand(voiceService),
           ],
@@ -294,17 +294,17 @@ class _VoiceControlPageState extends State<VoiceControlPage>
               ),
             ),
           ],
-          if (voiceService.lastWords.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Yang Didengar: "${voiceService.lastWords}"',
-              style: GoogleFonts.nunito(
-                fontSize: 12,
-                color: Colors.grey[500],
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
+//          if (voiceService.lastWords.isNotEmpty) ...[
+//            const SizedBox(height: 8),
+//            Text(
+//              'Yang Didengar: "${voiceService.lastWords}"',
+//              style: GoogleFonts.nunito(
+//                fontSize: 12,
+//                color: Colors.grey[500],
+//                fontStyle: FontStyle.italic,
+//              ),
+//            ),
+//          ],
         ],
       ),
     );

@@ -5,7 +5,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 class SocketService extends ChangeNotifier {
   IO.Socket? _socket;
   bool _isConnected = false;
-  String _serverUrl = 'http://192.168.4.1:5000';
+  String _serverUrl = 'http://192.168.4.1:3210';
   Timer? _reconnectTimer;
 
   bool get isConnected => _isConnected;
@@ -87,10 +87,7 @@ class SocketService extends ChangeNotifier {
   // Send joystick command
   void sendJoystickCommand(String command) {
     if (_socket != null && _isConnected) {
-      _socket!.emit('joystick_command', {
-        'command': command,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      });
+      _socket!.emit('perintah', command);
       print('📤 Sent joystick command: $command');
     } else {
       print('⚠️ Cannot send command - not connected');
@@ -100,10 +97,7 @@ class SocketService extends ChangeNotifier {
   // Send voice command
   void sendVoiceCommand(String command) {
     if (_socket != null && _isConnected) {
-      _socket!.emit('voice_command', {
-        'command': command,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      });
+      _socket!.emit('perintah', command);
       print('📤 Sent voice command: $command');
     } else {
       print('⚠️ Cannot send command - not connected');
@@ -113,14 +107,20 @@ class SocketService extends ChangeNotifier {
   // Send command sequence
   void sendCommandSequence(List<Map<String, dynamic>> commands) {
     if (_socket != null && _isConnected) {
-      _socket!.emit('run_commands', {
-        'command': 'run_commands',
-        'data': commands,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      });
+      _socket!.emit('run_commands', [ commands ] );
       print('📤 Sent command sequence: ${commands.length} commands');
     } else {
       print('⚠️ Cannot send commands - not connected');
+    }
+  }
+
+  // Send auto_stop
+  void sendAutoStop(bool isAutoStop) {
+    if (_socket != null && _isConnected) {
+      _socket!.emit('auto_stop', isAutoStop);
+      print('📤 Sent auto_stop: ${isAutoStop}');
+    } else {
+      print('⚠️ Cannot send auto_stop - not connected');
     }
   }
 

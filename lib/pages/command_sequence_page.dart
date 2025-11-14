@@ -18,6 +18,7 @@ class CommandSequencePage extends StatefulWidget {
 class _CommandSequencePageState extends State<CommandSequencePage> {
   List<CommandModel> _commands = [];
   bool _isLoading = true;
+  bool _autoStopEnabled = false;
 
   @override
   void initState() {
@@ -128,7 +129,7 @@ class _CommandSequencePageState extends State<CommandSequencePage> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: _commands.isNotEmpty ? _saveCommands : null,
+            onPressed: _saveCommands,
             icon: const Icon(Icons.save),
             tooltip: 'Simpan Urutan',
           ),
@@ -171,49 +172,94 @@ class _CommandSequencePageState extends State<CommandSequencePage> {
     );
   }
 
-  Widget _buildConnectionStatus() {
-    return Consumer<SocketService>(
-      builder: (context, socketService, child) {
-        return Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: socketService.isConnected
-                ? Colors.green.withOpacity(0.1)
-                : Colors.red.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: socketService.isConnected ? Colors.green : Colors.red,
-              width: 2,
-            ),
+Widget _buildConnectionStatus() {
+  return Consumer<SocketService>(
+    builder: (context, socketService, child) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: socketService.isConnected
+              ? Colors.green.withOpacity(0.1)
+              : Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: socketService.isConnected ? Colors.green : Colors.red,
+            width: 2,
           ),
-          child: Row(
-            children: [
-              Icon(
-                socketService.isConnected ? Icons.wifi : Icons.wifi_off,
-                color: socketService.isConnected ? Colors.green : Colors.red,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  socketService.isConnected
-                      ? 'Robot Siap Menerima Perintah'
-                      : 'Robot Tidak Terhubung',
-                  style: GoogleFonts.nunito(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color:
-                        socketService.isConnected ? Colors.green : Colors.red,
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(
+                  socketService.isConnected ? Icons.wifi : Icons.wifi_off,
+                  color: socketService.isConnected ? Colors.green : Colors.red,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    socketService.isConnected
+                        ? 'Robot Siap Menerima Perintah'
+                        : 'Robot Tidak Terhubung',
+                    style: GoogleFonts.nunito(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: socketService.isConnected
+                          ? Colors.green
+                          : Colors.red,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+              ],
+            ),
+            const SizedBox(height: 12),
+            // ?? Toggle Auto Stop
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Auto Stop',
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Switch(
+                  value: _autoStopEnabled,
+                  activeColor: Colors.green,
+                  onChanged: socketService.isConnected
+                      ? (value) {
+                          setState(() {
+                            _autoStopEnabled = value;
+                          });
+                          socketService.sendAutoStop(value);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                value
+                                    ? 'Auto Stop diaktifkan'
+                                    : 'Auto Stop dimatikan',
+                                style: GoogleFonts.nunito(),
+                              ),
+                              backgroundColor:
+                                  value ? Colors.green : Colors.orange,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      : null,
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildCommandsList() {
     if (_commands.isEmpty) {
@@ -303,12 +349,29 @@ class _CommandSequencePageState extends State<CommandSequencePage> {
             ),
           ],
         ),
-        subtitle: Text(
-          'Durasi: ${command.duration}s',
-          style: GoogleFonts.nunito(
-            color: Colors.grey[600],
-          ),
-        ),
+        subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+		    children: [
+                Text(
+                    'Durasi: ${command.duration}d',
+                    style: GoogleFonts.nunito(
+					    color: Colors.grey[600],
+					),
+                ),
+                Text(
+                    'Kecepatan: ${command.speed}%',
+                    style: GoogleFonts.nunito(
+					    color: Colors.grey[600],
+					),
+                ),
+                Text(
+                    'Maks. Jarak: ${command.max_distance}cm',
+                    style: GoogleFonts.nunito(
+					    color: Colors.grey[600],
+					),
+                ),
+		    ],
+		),
         trailing: IconButton(
           onPressed: () => _removeCommand(index),
           icon: const Icon(Icons.delete, color: Colors.red),
@@ -325,7 +388,7 @@ class _CommandSequencePageState extends State<CommandSequencePage> {
         children: [
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: _commands.isNotEmpty ? _saveCommands : null,
+              onPressed: _saveCommands,
               icon: const Icon(Icons.save),
               label: Text(
                 'Simpan',
@@ -408,15 +471,15 @@ class _CommandSequencePageState extends State<CommandSequencePage> {
 
   IconData _getCommandIcon(String type) {
     switch (type) {
-      case 'forward':
+      case 'maju':
         return Icons.keyboard_arrow_up;
-      case 'backward':
+      case 'mundur':
         return Icons.keyboard_arrow_down;
-      case 'left':
+      case 'kiri':
         return Icons.keyboard_arrow_left;
-      case 'right':
+      case 'kanan':
         return Icons.keyboard_arrow_right;
-      case 'stop':
+      case 'berhenti':
         return Icons.stop;
       default:
         return Icons.help;
@@ -425,15 +488,15 @@ class _CommandSequencePageState extends State<CommandSequencePage> {
 
   Color _getCommandColor(String type) {
     switch (type) {
-      case 'forward':
+      case 'maju':
         return Colors.green;
-      case 'backward':
+      case 'mundur':
         return Colors.orange;
-      case 'left':
+      case 'kiri':
         return Colors.blue;
-      case 'right':
+      case 'kanan':
         return Colors.purple;
-      case 'stop':
+      case 'berhenti':
         return Colors.red;
       default:
         return Colors.grey;
@@ -442,15 +505,15 @@ class _CommandSequencePageState extends State<CommandSequencePage> {
 
   String _getCommandDisplayName(String type) {
     switch (type) {
-      case 'forward':
+      case 'maju':
         return 'Maju';
-      case 'backward':
+      case 'mundur':
         return 'Mundur';
-      case 'left':
+      case 'kiri':
         return 'Kiri';
-      case 'right':
+      case 'kanan':
         return 'Kanan';
-      case 'stop':
+      case 'berhenti':
         return 'Berhenti';
       default:
         return type;
@@ -471,36 +534,38 @@ class AddCommandDialog extends StatefulWidget {
 }
 
 class _AddCommandDialogState extends State<AddCommandDialog> {
-  String _selectedCommand = 'forward';
+  String _selectedCommand = 'maju';
   double _duration = 2.0;
+  double _speed = 50;
+  double _max_distance = 10;
 
   final List<Map<String, dynamic>> _availableCommands = [
     {
-      'value': 'forward',
+      'value': 'maju',
       'label': 'Maju',
       'icon': Icons.keyboard_arrow_up,
       'color': Colors.green
     },
     {
-      'value': 'backward',
+      'value': 'mundur',
       'label': 'Mundur',
       'icon': Icons.keyboard_arrow_down,
       'color': Colors.orange
     },
     {
-      'value': 'left',
+      'value': 'kiri',
       'label': 'Kiri',
       'icon': Icons.keyboard_arrow_left,
       'color': Colors.blue
     },
     {
-      'value': 'right',
+      'value': 'kanan',
       'label': 'Kanan',
       'icon': Icons.keyboard_arrow_right,
       'color': Colors.purple
     },
     {
-      'value': 'stop',
+      'value': 'berhenti',
       'label': 'Berhenti',
       'icon': Icons.stop,
       'color': Colors.red
@@ -594,6 +659,50 @@ class _AddCommandDialogState extends State<AddCommandDialog> {
               });
             },
           ),
+
+          const SizedBox(height: 20),
+
+          // Speed slider
+          Text(
+            'Kecepatan: ${_speed.toStringAsFixed(0)}%',
+            style: GoogleFonts.nunito(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Slider(
+            value: _speed,
+            min: 0.0,
+            max: 100.0,
+            divisions: 50,
+            onChanged: (value) {
+              setState(() {
+                _speed = value;
+              });
+            },
+          ),
+
+          const SizedBox(height: 20),
+
+          // Speed slider
+          Text(
+            'Maksimal Jarak: ${_max_distance.toStringAsFixed(0)}cm',
+            style: GoogleFonts.nunito(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Slider(
+            value: _max_distance,
+            min: 0.0,
+            max: 100.0,
+            divisions: 50,
+            onChanged: (value) {
+              setState(() {
+                _max_distance = value;
+              });
+            },
+          ),
         ],
       ),
       actions: [
@@ -606,6 +715,8 @@ class _AddCommandDialogState extends State<AddCommandDialog> {
             final command = CommandModel(
               type: _selectedCommand,
               duration: _duration,
+              speed: _speed.toInt(),
+              max_distance: _max_distance.toInt(),
             );
             widget.onCommandAdded(command);
             Navigator.pop(context);

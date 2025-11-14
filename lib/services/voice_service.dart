@@ -11,17 +11,56 @@ class VoiceService extends ChangeNotifier {
 
   // Voice commands mapping
   final Map<String, String> _commandMap = {
-    'maju': 'forward',
-    'mundur': 'backward',
-    'kiri': 'left',
-    'kanan': 'right',
-    'berhenti': 'stop',
-    'stop': 'stop',
-    'forward': 'forward',
-    'backward': 'backward',
-    'left': 'left',
-    'right': 'right',
+    'maju': 'maju',
+    'mundur': 'mundur',
+    'kiri': 'kiri',
+    'kanan': 'kanan',
+    'berhenti': 'berhenti',
+    'stop': 'berhenti',
+    'maju': 'maju',
+    'mundur': 'mundur',
+    'kiri': 'kiri',
+    'kanan': 'kanan',
   };
+
+final Map<String, List<String>> _aliasMap = {
+  'maju': [
+    'mind you', 'maggio', 'module', 'mad you', 'macho', 'majoo', 'magu',
+    'might you', 'my you', 'madju', 'ma joo', 'mudge you', 'march you',
+    'mug you', 'mudge', 'mood you', 'madu', 'match you', 'much you',
+    'mojo', 'menu', 'maggioo', 'mago', 'major', 'margin', 'magic',
+    'my jaw', 'my joy', 'majuu', 'mad shoe', 'mood zoo',
+  ],
+  'mundur': [
+    'moon door', 'munder', 'mundo', 'mount door', 'moon do', 'wonder',
+    'mounder', 'mooder', 'munderu', 'moon der', 'mon dur', 'moon tour',
+    'moondoor', 'moondor', 'mundu', 'mundoor', 'mound door', 'moonder',
+    'moonderr', 'moon deer', 'mon door', 'moon dure', 'mundure',
+    'mourn door', 'mourned or', 'mon dur', 'monday', 'mourned her',
+  ],
+  'kiri': [
+    'carry', 'curry', 'kerry', 'carey', 'keary', 'key re', 'killy',
+    'kiddy', 'kitty', 'siri', 'kiri', 'kirie', 'kirry', 'kili', 'kirri',
+    'kiddy', 'kee ree', 'key rye', 'kira', 'query', 'curie', 'carry on',
+    'caring', 'killing', 'keely', 'cherry', 'gary', 'giri', 'greedy',
+    'kiddy', 'carie', 'kirli', 'cleary', 'clary', 'kiriee', 'keerie',
+  ],
+  'kanan': [
+    'canon', 'cannon', 'kanon', 'canaan', 'kannan', 'kanan', 'kanand',
+    'can on', 'can and', 'kananah', 'kan un', 'canan', 'cannonball',
+    'kanone', 'can none', 'can end', 'canan', 'can then', 'kan ant',
+    'canan', 'kan and', 'canonball', 'cana', 'kanun', 'kenan',
+    'canine', 'canon', 'can in', 'karen', 'caren', 'cannonball',
+  ],
+  'berhenti': [
+    'stop', 'stopped', 'burgundy', 'burn tea', 'burn t', 'beranti', 'berhenti',
+    'burnty', 'burned tea', 'burnt t', 'burn thee', 'burntye', 'burn tee',
+    'bird tea', 'birthday', 'birdie', 'bernie', 'berti', 'berty',
+    'burndy', 'burn the', 'burned e', 'burnin tea', 'burn t.', 'brandy',
+    'burundi', 'burenty', 'brunty', 'burn tea stop', 'burn to', 'burned',
+    'burni', 'burton', 'burn tee', 'burne t', 'burhenti', 'barenty',
+  ],
+};
 
   bool get isAvailable => _isAvailable;
   bool get isListening => _isListening;
@@ -94,6 +133,12 @@ class VoiceService extends ChangeNotifier {
     try {
       _isListening = true;
       notifyListeners();
+      var locales = await _speech.locales();
+      if (kDebugMode) {
+        for (int i = 0; i < locales.length; i++) {
+			print("[$i] ${locales[i].localeId}");
+		}
+      }
 
       await _speech.listen(
         onResult: (result) {
@@ -106,7 +151,7 @@ class VoiceService extends ChangeNotifier {
 
           // Check if any command matches
           String? matchedCommand = _findMatchingCommand(_lastWords);
-          if (matchedCommand != null && _confidence > 0.5) {
+          if (matchedCommand != null) {
             if (kDebugMode) {
               print('✅ Command recognized: $matchedCommand');
             }
@@ -119,7 +164,7 @@ class VoiceService extends ChangeNotifier {
         listenFor: const Duration(seconds: 5),
         pauseFor: const Duration(seconds: 2),
         partialResults: true,
-        localeId: 'id_ID', // Indonesian locale
+        localeId: 'in_ID', // Indonesian locale
         cancelOnError: true,
         listenMode: stt.ListenMode.confirmation,
       );
@@ -155,6 +200,24 @@ class VoiceService extends ChangeNotifier {
       return _commandMap[cleanText];
     }
 
+    // Cek alias list
+    for (final entry in _aliasMap.entries) {
+      final command = entry.key;
+      final aliases = entry.value;
+
+      // Cek apakah spokenText sama persis dengan alias
+      if (aliases.contains(cleanText)) {
+        return command;
+      }
+
+      // Cek kalau spokenText mengandung alias (partial match)
+      for (String alias in aliases) {
+        if (cleanText.contains(alias)) {
+          return command;
+        }
+      }
+    }
+
     // Partial match - check if any command is contained in the spoken text
     for (String command in _commandMap.keys) {
       if (cleanText.contains(command)) {
@@ -168,15 +231,15 @@ class VoiceService extends ChangeNotifier {
   // Get display name for command
   String getDisplayName(String command) {
     switch (command) {
-      case 'forward':
+      case 'maju':
         return 'Maju';
-      case 'backward':
+      case 'mundur':
         return 'Mundur';
-      case 'left':
+      case 'kiri':
         return 'Kiri';
-      case 'right':
+      case 'kanan':
         return 'Kanan';
-      case 'stop':
+      case 'berhenti':
         return 'Berhenti';
       default:
         return command;

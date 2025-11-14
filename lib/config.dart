@@ -61,7 +61,7 @@ TextStyle alertTextStyle = GoogleFonts.poppins(
   color: alertColor,
 );
 
-String wsUrl = dotenv.env["WS_URL"] ?? "http://localhost:5000/";
+String wsUrl = dotenv.env["WS_URL"] ?? "http://localhost:3210/";
 
 String capitalizeFirstLowerRest(String str) {
   if (str.isEmpty) return str;

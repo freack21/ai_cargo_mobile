@@ -14,7 +14,7 @@ class JoystickControlPage extends StatefulWidget {
 }
 
 class _JoystickControlPageState extends State<JoystickControlPage> {
-  String _currentCommand = 'stop';
+  String _currentCommand = 'berhenti';
   bool _isControlling = false;
 
   @override
@@ -249,17 +249,17 @@ class _JoystickControlPageState extends State<JoystickControlPage> {
   }
 
   void _handleJoystickMove(StickDragDetails details) {
-    String newCommand = 'stop';
+    String newCommand = 'berhenti';
     
     // Determine command based on joystick position
     if (details.y > 0.5) {
-      newCommand = 'forward';
+      newCommand = 'mundur';
     } else if (details.y < -0.5) {
-      newCommand = 'backward';
+      newCommand = 'maju';
     } else if (details.x > 0.5) {
-      newCommand = 'right';
+      newCommand = 'kanan';
     } else if (details.x < -0.5) {
-      newCommand = 'left';
+      newCommand = 'kiri';
     }
 
     // Only send command if it changed
@@ -280,16 +280,16 @@ class _JoystickControlPageState extends State<JoystickControlPage> {
   Widget _getCommandIcon(String command) {
     IconData icon;
     switch (command) {
-      case 'forward':
+      case 'maju':
         icon = Icons.keyboard_arrow_up;
         break;
-      case 'backward':
+      case 'mundur':
         icon = Icons.keyboard_arrow_down;
         break;
-      case 'left':
+      case 'kiri':
         icon = Icons.keyboard_arrow_left;
         break;
-      case 'right':
+      case 'kanan':
         icon = Icons.keyboard_arrow_right;
         break;
       default:
@@ -305,13 +305,13 @@ class _JoystickControlPageState extends State<JoystickControlPage> {
 
   String _getCommandText(String command) {
     switch (command) {
-      case 'forward':
+      case 'maju':
         return 'MAJU';
-      case 'backward':
+      case 'mundur':
         return 'MUNDUR';
-      case 'left':
+      case 'kiri':
         return 'KIRI';
-      case 'right':
+      case 'kanan':
         return 'KANAN';
       default:
         return 'BERHENTI';
@@ -320,13 +320,13 @@ class _JoystickControlPageState extends State<JoystickControlPage> {
 
   Color _getCommandColor(String command) {
     switch (command) {
-      case 'forward':
+      case 'maju':
         return Colors.green;
-      case 'backward':
+      case 'mundur':
         return Colors.orange;
-      case 'left':
+      case 'kiri':
         return Colors.blue;
-      case 'right':
+      case 'kanan':
         return Colors.purple;
       default:
         return Colors.red;
