@@ -10,6 +10,7 @@ class SocketService extends ChangeNotifier {
 
   bool get isConnected => _isConnected;
   String get serverUrl => _serverUrl;
+  IO.Socket? get socket => _socket;
 
   void setServerUrl(String url) {
     _serverUrl = url;
@@ -107,7 +108,7 @@ class SocketService extends ChangeNotifier {
   // Send command sequence
   void sendCommandSequence(List<Map<String, dynamic>> commands) {
     if (_socket != null && _isConnected) {
-      _socket!.emit('run_commands', [ commands ] );
+      _socket!.emit('run_commands', [commands]);
       print('📤 Sent command sequence: ${commands.length} commands');
     } else {
       print('⚠️ Cannot send commands - not connected');

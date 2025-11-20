@@ -23,44 +23,181 @@ class VoiceService extends ChangeNotifier {
     'kanan': 'kanan',
   };
 
-final Map<String, List<String>> _aliasMap = {
-  'maju': [
-    'mind you', 'maggio', 'module', 'mad you', 'macho', 'majoo', 'magu',
-    'might you', 'my you', 'madju', 'ma joo', 'mudge you', 'march you',
-    'mug you', 'mudge', 'mood you', 'madu', 'match you', 'much you',
-    'mojo', 'menu', 'maggioo', 'mago', 'major', 'margin', 'magic',
-    'my jaw', 'my joy', 'majuu', 'mad shoe', 'mood zoo',
-  ],
-  'mundur': [
-    'moon door', 'munder', 'mundo', 'mount door', 'moon do', 'wonder',
-    'mounder', 'mooder', 'munderu', 'moon der', 'mon dur', 'moon tour',
-    'moondoor', 'moondor', 'mundu', 'mundoor', 'mound door', 'moonder',
-    'moonderr', 'moon deer', 'mon door', 'moon dure', 'mundure',
-    'mourn door', 'mourned or', 'mon dur', 'monday', 'mourned her',
-  ],
-  'kiri': [
-    'carry', 'curry', 'kerry', 'carey', 'keary', 'key re', 'killy',
-    'kiddy', 'kitty', 'siri', 'kiri', 'kirie', 'kirry', 'kili', 'kirri',
-    'kiddy', 'kee ree', 'key rye', 'kira', 'query', 'curie', 'carry on',
-    'caring', 'killing', 'keely', 'cherry', 'gary', 'giri', 'greedy',
-    'kiddy', 'carie', 'kirli', 'cleary', 'clary', 'kiriee', 'keerie',
-  ],
-  'kanan': [
-    'canon', 'cannon', 'kanon', 'canaan', 'kannan', 'kanan', 'kanand',
-    'can on', 'can and', 'kananah', 'kan un', 'canan', 'cannonball',
-    'kanone', 'can none', 'can end', 'canan', 'can then', 'kan ant',
-    'canan', 'kan and', 'canonball', 'cana', 'kanun', 'kenan',
-    'canine', 'canon', 'can in', 'karen', 'caren', 'cannonball',
-  ],
-  'berhenti': [
-    'stop', 'stopped', 'burgundy', 'burn tea', 'burn t', 'beranti', 'berhenti',
-    'burnty', 'burned tea', 'burnt t', 'burn thee', 'burntye', 'burn tee',
-    'bird tea', 'birthday', 'birdie', 'bernie', 'berti', 'berty',
-    'burndy', 'burn the', 'burned e', 'burnin tea', 'burn t.', 'brandy',
-    'burundi', 'burenty', 'brunty', 'burn tea stop', 'burn to', 'burned',
-    'burni', 'burton', 'burn tee', 'burne t', 'burhenti', 'barenty',
-  ],
-};
+  final Map<String, List<String>> _aliasMap = {
+    'maju': [
+      'mind you',
+      'maggio',
+      'module',
+      'mad you',
+      'macho',
+      'majoo',
+      'magu',
+      'might you',
+      'my you',
+      'madju',
+      'ma joo',
+      'mudge you',
+      'march you',
+      'mug you',
+      'mudge',
+      'mood you',
+      'madu',
+      'match you',
+      'much you',
+      'mojo',
+      'menu',
+      'maggioo',
+      'mago',
+      'major',
+      'margin',
+      'magic',
+      'my jaw',
+      'my joy',
+      'majuu',
+      'mad shoe',
+      'mood zoo',
+    ],
+    'mundur': [
+      'moon door',
+      'munder',
+      'mundo',
+      'mount door',
+      'moon do',
+      'wonder',
+      'mounder',
+      'mooder',
+      'munderu',
+      'moon der',
+      'mon dur',
+      'moon tour',
+      'moondoor',
+      'moondor',
+      'mundu',
+      'mundoor',
+      'mound door',
+      'moonder',
+      'moonderr',
+      'moon deer',
+      'mon door',
+      'moon dure',
+      'mundure',
+      'mourn door',
+      'mourned or',
+      'mon dur',
+      'monday',
+      'mourned her',
+    ],
+    'kiri': [
+      'carry',
+      'curry',
+      'kerry',
+      'carey',
+      'keary',
+      'key re',
+      'killy',
+      'kiddy',
+      'kitty',
+      'siri',
+      'kiri',
+      'kirie',
+      'kirry',
+      'kili',
+      'kirri',
+      'kiddy',
+      'kee ree',
+      'key rye',
+      'kira',
+      'query',
+      'curie',
+      'carry on',
+      'caring',
+      'killing',
+      'keely',
+      'cherry',
+      'gary',
+      'giri',
+      'greedy',
+      'kiddy',
+      'carie',
+      'kirli',
+      'cleary',
+      'clary',
+      'kiriee',
+      'keerie',
+    ],
+    'kanan': [
+      'canon',
+      'cannon',
+      'kanon',
+      'canaan',
+      'kannan',
+      'kanan',
+      'kanand',
+      'can on',
+      'can and',
+      'kananah',
+      'kan un',
+      'canan',
+      'cannonball',
+      'kanone',
+      'can none',
+      'can end',
+      'canan',
+      'can then',
+      'kan ant',
+      'canan',
+      'kan and',
+      'canonball',
+      'cana',
+      'kanun',
+      'kenan',
+      'canine',
+      'canon',
+      'can in',
+      'karen',
+      'caren',
+      'cannonball',
+    ],
+    'berhenti': [
+      'stop',
+      'stopped',
+      'burgundy',
+      'burn tea',
+      'burn t',
+      'beranti',
+      'berhenti',
+      'burnty',
+      'burned tea',
+      'burnt t',
+      'burn thee',
+      'burntye',
+      'burn tee',
+      'bird tea',
+      'birthday',
+      'birdie',
+      'bernie',
+      'berti',
+      'berty',
+      'burndy',
+      'burn the',
+      'burned e',
+      'burnin tea',
+      'burn t.',
+      'brandy',
+      'burundi',
+      'burenty',
+      'brunty',
+      'burn tea stop',
+      'burn to',
+      'burned',
+      'burni',
+      'burton',
+      'burn tee',
+      'burne t',
+      'burhenti',
+      'barenty',
+    ],
+  };
 
   bool get isAvailable => _isAvailable;
   bool get isListening => _isListening;
@@ -117,7 +254,8 @@ final Map<String, List<String>> _aliasMap = {
     }
   }
 
-  void startListening({Function(String)? onCommand}) async {
+  // Start recording (like WhatsApp voice note - hold to record)
+  void startRecording() async {
     if (!_isAvailable) {
       if (kDebugMode) {
         print('⚠️ Speech recognition not available');
@@ -126,18 +264,17 @@ final Map<String, List<String>> _aliasMap = {
     }
 
     if (_isListening) {
-      stopListening();
-      return;
+      return; // Already recording
     }
 
     try {
       _isListening = true;
+      _lastWords = ''; // Reset previous words
+      _confidence = 0.0;
       notifyListeners();
-      var locales = await _speech.locales();
+
       if (kDebugMode) {
-        for (int i = 0; i < locales.length; i++) {
-			print("[$i] ${locales[i].localeId}");
-		}
+        print('🎤 Started recording...');
       }
 
       await _speech.listen(
@@ -146,26 +283,16 @@ final Map<String, List<String>> _aliasMap = {
           _confidence = result.confidence;
 
           if (kDebugMode) {
-            print('🎤 Heard: $_lastWords (confidence: $_confidence)');
-          }
-
-          // Check if any command matches
-          String? matchedCommand = _findMatchingCommand(_lastWords);
-          if (matchedCommand != null) {
-            if (kDebugMode) {
-              print('✅ Command recognized: $matchedCommand');
-            }
-            onCommand?.call(matchedCommand);
-            stopListening(); // Stop after command recognized
+            print('🎤 Partial result: $_lastWords (confidence: $_confidence)');
           }
 
           notifyListeners();
         },
-        listenFor: const Duration(seconds: 5),
-        pauseFor: const Duration(seconds: 2),
+        listenFor: const Duration(seconds: 30), // Max 30 seconds like WhatsApp
+        pauseFor: const Duration(seconds: 1),
         partialResults: true,
-        localeId: 'in_ID', // Indonesian locale
-        cancelOnError: true,
+        localeId: 'id_ID', // Indonesian locale
+        cancelOnError: false,
         listenMode: stt.ListenMode.confirmation,
       );
     } catch (e) {
@@ -175,6 +302,37 @@ final Map<String, List<String>> _aliasMap = {
       _isListening = false;
       notifyListeners();
     }
+  }
+
+  // Process the recorded audio when user releases the button
+  void processRecording({Function(String)? onCommand}) {
+    if (kDebugMode) {
+      print('🎤 Processing recording: $_lastWords (confidence: $_confidence)');
+    }
+
+    if (_lastWords.isNotEmpty) {
+      // Check if any command matches
+      String? matchedCommand = _findMatchingCommand(_lastWords);
+      if (matchedCommand != null && _confidence > 0.3) {
+        if (kDebugMode) {
+          print('✅ Command recognized: $matchedCommand');
+        }
+        onCommand?.call(matchedCommand);
+      } else {
+        if (kDebugMode) {
+          print('❌ No command recognized from: $_lastWords');
+        }
+      }
+    } else {
+      if (kDebugMode) {
+        print('❌ No speech detected');
+      }
+    }
+  }
+
+  // Legacy method for backward compatibility
+  void startListening({Function(String)? onCommand}) async {
+    startRecording();
   }
 
   void stopListening() {

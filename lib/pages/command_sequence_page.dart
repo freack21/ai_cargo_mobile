@@ -18,7 +18,6 @@ class CommandSequencePage extends StatefulWidget {
 class _CommandSequencePageState extends State<CommandSequencePage> {
   List<CommandModel> _commands = [];
   bool _isLoading = true;
-  bool _autoStopEnabled = false;
 
   @override
   void initState() {
@@ -172,94 +171,55 @@ class _CommandSequencePageState extends State<CommandSequencePage> {
     );
   }
 
-Widget _buildConnectionStatus() {
-  return Consumer<SocketService>(
-    builder: (context, socketService, child) {
-      return Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: socketService.isConnected
-              ? Colors.green.withOpacity(0.1)
-              : Colors.red.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: socketService.isConnected ? Colors.green : Colors.red,
-            width: 2,
+  Widget _buildConnectionStatus() {
+    return Consumer<SocketService>(
+      builder: (context, socketService, child) {
+        return Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: socketService.isConnected
+                ? Colors.green.withOpacity(0.1)
+                : Colors.red.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: socketService.isConnected ? Colors.green : Colors.red,
+              width: 2,
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Icon(
-                  socketService.isConnected ? Icons.wifi : Icons.wifi_off,
-                  color: socketService.isConnected ? Colors.green : Colors.red,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    socketService.isConnected
-                        ? 'Robot Siap Menerima Perintah'
-                        : 'Robot Tidak Terhubung',
-                    style: GoogleFonts.nunito(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: socketService.isConnected
-                          ? Colors.green
-                          : Colors.red,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    socketService.isConnected ? Icons.wifi : Icons.wifi_off,
+                    color:
+                        socketService.isConnected ? Colors.green : Colors.red,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      socketService.isConnected
+                          ? 'Robot Siap Menerima Perintah'
+                          : 'Robot Tidak Terhubung',
+                      style: GoogleFonts.nunito(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: socketService.isConnected
+                            ? Colors.green
+                            : Colors.red,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // ?? Toggle Auto Stop
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Auto Stop',
-                  style: GoogleFonts.nunito(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Switch(
-                  value: _autoStopEnabled,
-                  activeColor: Colors.green,
-                  onChanged: socketService.isConnected
-                      ? (value) {
-                          setState(() {
-                            _autoStopEnabled = value;
-                          });
-                          socketService.sendAutoStop(value);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                value
-                                    ? 'Auto Stop diaktifkan'
-                                    : 'Auto Stop dimatikan',
-                                style: GoogleFonts.nunito(),
-                              ),
-                              backgroundColor:
-                                  value ? Colors.green : Colors.orange,
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      : null,
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildCommandsList() {
     if (_commands.isEmpty) {
@@ -350,28 +310,28 @@ Widget _buildConnectionStatus() {
           ],
         ),
         subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-		    children: [
-                Text(
-                    'Durasi: ${command.duration}d',
-                    style: GoogleFonts.nunito(
-					    color: Colors.grey[600],
-					),
-                ),
-                Text(
-                    'Kecepatan: ${command.speed}%',
-                    style: GoogleFonts.nunito(
-					    color: Colors.grey[600],
-					),
-                ),
-                Text(
-                    'Maks. Jarak: ${command.max_distance}cm',
-                    style: GoogleFonts.nunito(
-					    color: Colors.grey[600],
-					),
-                ),
-		    ],
-		),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Durasi: ${command.duration}d',
+              style: GoogleFonts.nunito(
+                color: Colors.grey[600],
+              ),
+            ),
+            Text(
+              'Kecepatan: ${command.speed}%',
+              style: GoogleFonts.nunito(
+                color: Colors.grey[600],
+              ),
+            ),
+            Text(
+              'Maks. Jarak: ${command.max_distance}cm',
+              style: GoogleFonts.nunito(
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
         trailing: IconButton(
           onPressed: () => _removeCommand(index),
           icon: const Icon(Icons.delete, color: Colors.red),

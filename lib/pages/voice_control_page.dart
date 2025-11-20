@@ -79,12 +79,12 @@ class _VoiceControlPageState extends State<VoiceControlPage>
             children: [
               // Connection status
               _buildConnectionStatus(),
-              
+
               // Voice status and mic
               Expanded(
                 child: _buildVoiceArea(),
               ),
-              
+
               // Available commands
               _buildAvailableCommands(),
             ],
@@ -101,7 +101,7 @@ class _VoiceControlPageState extends State<VoiceControlPage>
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: socketService.isConnected 
+            color: socketService.isConnected
                 ? Colors.green.withOpacity(0.1)
                 : Colors.red.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
@@ -120,11 +120,14 @@ class _VoiceControlPageState extends State<VoiceControlPage>
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  socketService.isConnected ? 'Robot Siap Menerima Perintah' : 'Robot Tidak Terhubung',
+                  socketService.isConnected
+                      ? 'Robot Siap Menerima Perintah'
+                      : 'Robot Tidak Terhubung',
                   style: GoogleFonts.nunito(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: socketService.isConnected ? Colors.green : Colors.red,
+                    color:
+                        socketService.isConnected ? Colors.green : Colors.red,
                   ),
                 ),
               ),
@@ -144,7 +147,13 @@ class _VoiceControlPageState extends State<VoiceControlPage>
             // Voice status text
             _buildVoiceStatus(voiceService),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 20),
+
+            // Real-time speech display (when recording)
+            if (voiceService.isListening && voiceService.lastWords.isNotEmpty)
+              _buildRealTimeSpeech(voiceService),
+
+            const SizedBox(height: 20),
 
             // Animated microphone button
             _buildMicButton(voiceService, socketService),
@@ -172,33 +181,60 @@ class _VoiceControlPageState extends State<VoiceControlPage>
     }
 
     if (voiceService.isListening) {
-      return AnimatedTextKit(
-        animatedTexts: [
-          TypewriterAnimatedText(
-            'Mendengarkan...',
-            textStyle: GoogleFonts.nunito(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
+      return Column(
+        children: [
+          AnimatedTextKit(
+            animatedTexts: [
+              TypewriterAnimatedText(
+                '🎤 Merekam...',
+                textStyle: GoogleFonts.nunito(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+                speed: const Duration(milliseconds: 100),
+              ),
+            ],
+            repeatForever: true,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Lepas untuk mengirim perintah',
+            style: GoogleFonts.nunito(
+              fontSize: 14,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
             ),
-            speed: const Duration(milliseconds: 100),
           ),
         ],
-        repeatForever: true,
       );
     }
 
-    return Text(
-      'Tekan mikrofon untuk mulai',
-      style: GoogleFonts.nunito(
-        fontSize: 18,
-        color: Colors.grey[600],
-        fontWeight: FontWeight.w600,
-      ),
+    return Column(
+      children: [
+        Text(
+          '🎤 Tahan untuk Merekam',
+          style: GoogleFonts.nunito(
+            fontSize: 20,
+            color: const Color(0xFF4FC3F7),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Seperti voice note WhatsApp',
+          style: GoogleFonts.nunito(
+            fontSize: 14,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildMicButton(VoiceService voiceService, SocketService socketService) {
+  Widget _buildMicButton(
+      VoiceService voiceService, SocketService socketService) {
     if (voiceService.isListening) {
       _micAnimationController.repeat(reverse: true);
     } else {
@@ -212,34 +248,45 @@ class _VoiceControlPageState extends State<VoiceControlPage>
         return Transform.scale(
           scale: voiceService.isListening ? _micAnimation.value : 1.0,
           child: GestureDetector(
-            onTap: () {
+            // Hold to record like WhatsApp voice note
+            onTapDown: (_) {
               HapticFeedback.mediumImpact();
-              if (voiceService.isListening) {
-                voiceService.stopListening();
-              } else {
-                voiceService.startListening(
-                  onCommand: (command) {
-                    setState(() {
-                      _lastCommand = command;
-                    });
-                    socketService.sendVoiceCommand(command);
-                    HapticFeedback.heavyImpact();
-                  },
-                );
-              }
+              voiceService.startRecording();
+            },
+            onTapUp: (_) {
+              HapticFeedback.heavyImpact();
+              voiceService.stopListening();
+              // Process the recording after user releases
+              voiceService.processRecording(
+                onCommand: (command) {
+                  setState(() {
+                    _lastCommand = command;
+                  });
+                  socketService.sendVoiceCommand(command);
+                  HapticFeedback.heavyImpact();
+                },
+              );
+            },
+            onTapCancel: () {
+              // If user drags away, cancel recording
+              voiceService.stopListening();
             },
             child: Container(
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: voiceService.isListening ? Colors.red : Colors.blue,
+                color: voiceService.isListening
+                    ? Colors.red
+                    : const Color(0xFF4FC3F7),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: (voiceService.isListening ? Colors.red : Colors.blue)
+                    color: (voiceService.isListening
+                            ? Colors.red
+                            : const Color(0xFF4FC3F7))
                         .withOpacity(0.3),
                     blurRadius: 20,
-                    spreadRadius: voiceService.isListening ? 10 : 5,
+                    spreadRadius: voiceService.isListening ? 15 : 5,
                   ),
                 ],
               ),
@@ -252,6 +299,41 @@ class _VoiceControlPageState extends State<VoiceControlPage>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildRealTimeSpeech(VoiceService voiceService) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Yang Didengar:',
+            style: GoogleFonts.nunito(
+              fontSize: 12,
+              color: Colors.red[700],
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '"${voiceService.lastWords}"',
+            style: GoogleFonts.nunito(
+              fontSize: 16,
+              color: Colors.red[800],
+              fontWeight: FontWeight.bold,
+              fontStyle: FontStyle.italic,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 

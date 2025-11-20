@@ -8,8 +8,37 @@ import 'joystick_control_page.dart';
 import 'voice_control_page.dart';
 import 'command_sequence_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool _autoStopEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Auto connect when page loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final socketService = Provider.of<SocketService>(context, listen: false);
+      if (!socketService.isConnected) {
+        socketService.connect();
+      }
+
+      // Listen for ping events to refresh auto_stop status
+      socketService.socket?.on('ping', (data) {
+        if (data != null && data is Map && data.containsKey('auto_stop')) {
+          setState(() {
+            _autoStopEnabled = data['auto_stop'] ?? false;
+          });
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,26 +59,33 @@ class HomePage extends StatelessWidget {
             children: [
               // Header with connection status
               _buildHeader(context),
-              
-              // Main content
+
+              // Main content - Scrollable
               Expanded(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // App title
                       _buildTitle(),
-                      
-                      const SizedBox(height: 40),
-                      
-                      // Robot illustration
-                      _buildRobotIllustration(),
-                      
-                      const SizedBox(height: 40),
-                      
+
+                      // const SizedBox(height: 30),
+
+                      // // Robot illustration
+                      // _buildRobotIllustration(),
+
+                      const SizedBox(height: 20),
+
+                      // Auto Stop Control
+                      _buildAutoStopControl(context),
+
+                      const SizedBox(height: 20),
+
                       // Menu buttons
                       _buildMenuButtons(context),
+
+                      // Bottom padding for safe scrolling
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -100,13 +136,13 @@ class HomePage extends StatelessWidget {
       children: [
         Text(
           '🤖',
-          style: const TextStyle(fontSize: 60),
+          style: const TextStyle(fontSize: 48),
         ),
         const SizedBox(height: 16),
         Text(
           'Robot Edukasi',
           style: GoogleFonts.nunito(
-            fontSize: 36,
+            fontSize: 28,
             fontWeight: FontWeight.bold,
             color: Colors.white,
             shadows: [
@@ -121,7 +157,7 @@ class HomePage extends StatelessWidget {
         Text(
           'Kontrol Robot Pintar',
           style: GoogleFonts.nunito(
-            fontSize: 18,
+            fontSize: 16,
             color: Colors.white.withOpacity(0.9),
             fontWeight: FontWeight.w600,
           ),
@@ -132,18 +168,191 @@ class HomePage extends StatelessWidget {
 
   Widget _buildRobotIllustration() {
     return Container(
-      width: 120,
-      height: 120,
+      width: 100,
+      height: 100,
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(60),
+        borderRadius: BorderRadius.circular(50),
         border: Border.all(color: Colors.white.withOpacity(0.3), width: 3),
       ),
       child: const Icon(
         Icons.smart_toy,
-        size: 60,
+        size: 50,
         color: Colors.white,
       ),
+    );
+  }
+
+  Widget _buildAutoStopControl(BuildContext context) {
+    return Consumer<SocketService>(
+      builder: (context, socketService, child) {
+        return Container(
+          // margin: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.75),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+            border: Border.all(
+              color: _autoStopEnabled
+                  ? Colors.green
+                  : Colors.grey.withOpacity(0.3),
+              width: 2,
+            ),
+          ),
+          child: Column(
+            children: [
+              // Title with icon
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.stop_circle,
+                    color: _autoStopEnabled ? Colors.green : Colors.grey,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Auto Stop',
+                    style: GoogleFonts.nunito(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: _autoStopEnabled
+                          ? Colors.green[700]
+                          : Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 4),
+
+              // Description
+              Text(
+                _autoStopEnabled
+                    ? 'Robot akan berhenti otomatis jika ada halangan'
+                    : 'Robot tidak akan berhenti otomatis',
+                style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 8),
+
+              // Toggle Switch
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _autoStopEnabled ? 'Aktif' : 'Nonaktif',
+                    style: GoogleFonts.nunito(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: _autoStopEnabled
+                          ? Colors.green[700]
+                          : Colors.grey[700],
+                    ),
+                  ),
+                  Transform.scale(
+                    scale: 1.2,
+                    child: Switch(
+                      value: _autoStopEnabled,
+                      activeColor: Colors.green,
+                      activeTrackColor: Colors.green.withOpacity(0.3),
+                      inactiveThumbColor: Colors.grey,
+                      inactiveTrackColor: Colors.grey.withOpacity(0.3),
+                      onChanged: socketService.isConnected
+                          ? (value) {
+                              HapticFeedback.lightImpact();
+                              setState(() {
+                                _autoStopEnabled = value;
+                              });
+                              socketService.sendAutoStop(value);
+
+                              // Show feedback
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      Icon(
+                                        value
+                                            ? Icons.check_circle
+                                            : Icons.cancel,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        value
+                                            ? '🛡️ Auto Stop diaktifkan!'
+                                            : '⚠️ Auto Stop dimatikan!',
+                                        style: GoogleFonts.nunito(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  backgroundColor:
+                                      value ? Colors.green : Colors.orange,
+                                  duration: const Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              );
+                            }
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+
+              // Connection status indicator
+              if (!socketService.isConnected) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.wifi_off,
+                        color: Colors.red,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Perlu koneksi robot',
+                        style: GoogleFonts.nunito(
+                          fontSize: 12,
+                          color: Colors.red[700],
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -160,7 +369,8 @@ class HomePage extends StatelessWidget {
                 const Color(0xFFFFEB3B), // Yellow
                 () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const JoystickControlPage()),
+                  MaterialPageRoute(
+                      builder: (_) => const JoystickControlPage()),
                 ),
               ),
             ),
@@ -190,7 +400,8 @@ class HomePage extends StatelessWidget {
                 const Color(0xFF81C784), // Light Green
                 () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const CommandSequencePage()),
+                  MaterialPageRoute(
+                      builder: (_) => const CommandSequencePage()),
                 ),
               ),
             ),
